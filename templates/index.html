@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Robot Control</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+        .btn { padding: 20px 40px; font-size: 18px; margin: 10px; cursor: pointer; }
+        .stop { background-color: #ff4d4d; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Robot Teleoperation</h1>
+    <button class="btn" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')">Forward</button>
+    <button class="btn" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')">Backward</button>
+    <br><br>
+    <button class="btn stop" onclick="sendCmd('stop')">EMERGENCY STOP</button>
+
+    <script>
+        function sendCmd(action) {
+            fetch('/control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: action })
+            }).catch(err => console.error('Error:', err));
+        }
+    </script>
+</body>
+</html>
