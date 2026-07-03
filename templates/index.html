@@ -18,6 +18,8 @@
     <button class="btn stop" onclick="sendCmd('stop')">EMERGENCY STOP</button>
 
     <script>
+        const activeKeys = new Set();
+
         function sendCmd(action) {
             fetch('/control', {
                 method: 'POST',
@@ -25,6 +27,30 @@
                 body: JSON.stringify({ action: action })
             }).catch(err => console.error('Error:', err));
         }
+
+        window.addEventListener('keydown', (event) => {
+            if (event.repeat) return; // Prevents OS key-repeat events from trigger-spamming fetch
+
+            const key = event.key.toLowerCase();
+            if (key === 'w') {
+                activeKeys.add('w');
+                sendCmd('forward');
+            } else if (key === 's') {
+                activeKeys.add('s');
+                sendCmd('backward');
+            }
+        });
+
+        window.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key === 'w' || key === 's') {
+                activeKeys.delete(key);
+                // Only send stop if no direction keys remain active
+                if (!activeKeys.has('w') && !activeKeys.has('s')) {
+                    sendCmd('stop');
+                }
+            }
+        });
     </script>
 </body>
 </html>
