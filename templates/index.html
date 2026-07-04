@@ -12,8 +12,8 @@
 <body>
     <h1>Duck Motor Control</h1>
     <h2>Motor 1</h2>
-    <button class="btn" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')">Forward</button>
-    <button class="btn" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')">Backward</button>
+    <button class="btn" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('forward'); event.preventDefault();" ontouchend="sendCmd('stop');">Forward</button>
+    <button class="btn" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('backward'); event.preventDefault();" ontouchend="sendCmd('stop');">Backward</button>
     <br><br>
     <button class="btn stop" onclick="sendCmd('stop')">EMERGENCY STOP</button>
 
@@ -39,6 +39,12 @@
                 activeKeys.add('s');
                 sendCmd('backward');
             }
+        });
+
+        // Prevent touch devices from generating subsequent mouse events that could
+        // trigger duplicate commands. Also handle touchcancel which should stop the motor.
+        window.addEventListener('touchcancel', (event) => {
+            sendCmd('stop');
         });
 
         window.addEventListener('keyup', (event) => {
