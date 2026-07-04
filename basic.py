@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from gpiozero import PWMOutputDevice, DigitalOutputDevice
+import socket
 
 app = Flask(__name__)
 
@@ -15,9 +16,30 @@ def stop_motor():
     pwm_forward.value = 0.0
     pwm_reverse.value = 0.0
 
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+def inject_ip_banner(html, local_ip):
+    lower_html = html.lower()
+    body_idx = lower_html.find('<body')
+    if body_idx >= 0:
+        tag_end = html.find('>', body_idx)
+        if tag_end >= 0:
+            return html[:tag_end+1] + f'<div style="padding: 1rem; background: #eef; font-weight: bold;">Local IP: {local_ip}</div>' + html[tag_end+1:]
+    return f'<div style="padding: 1rem; background: #eef; font-weight: bold;">Local IP: {local_ip}</div>' + html
+
 @app.route('/')
 def index():
-    return render_template('./index.html')
+    local_ip = get_local_ip()
+    rendered = render_template('./index.html')
+    return inject_ip_banner(rendered, local_ip)
 
 @app.route('/control', methods=['POST'])
 def control():
