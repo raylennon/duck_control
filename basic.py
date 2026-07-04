@@ -23,13 +23,24 @@ def index():
 def control():
     data = request.json
     action = data.get('action')
+    # Modifiers: expect booleans 'ctrl' and 'shift' in the JSON
+    ctrl = bool(data.get('ctrl', False))
+    shift = bool(data.get('shift', False))
+
+    # Determine speed: ctrl -> full, shift -> slow, otherwise default half
+    if ctrl:
+        speed = 1.0
+    elif shift:
+        speed = 0.1
+    else:
+        speed = 0.5
     
     if action == 'forward':
         pwm_reverse.value = 0.0
-        pwm_forward.value = 0.5
+        pwm_forward.value = speed
     elif action == 'backward':
         pwm_forward.value = 0.0
-        pwm_reverse.value = 0.5
+        pwm_reverse.value = speed
     elif action == 'stop':
         stop_motor()
         

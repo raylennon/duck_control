@@ -20,11 +20,12 @@
     <script>
         const activeKeys = new Set();
 
-        function sendCmd(action) {
+        function sendCmd(action, mods = {}) {
+            const body = Object.assign({ action: action }, mods);
             fetch('/control', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: action })
+                body: JSON.stringify(body)
             }).catch(err => console.error('Error:', err));
         }
 
@@ -34,10 +35,10 @@
             const key = event.key.toLowerCase();
             if (key === 'w') {
                 activeKeys.add('w');
-                sendCmd('forward');
+                sendCmd('forward', { ctrl: event.ctrlKey, shift: event.shiftKey });
             } else if (key === 's') {
                 activeKeys.add('s');
-                sendCmd('backward');
+                sendCmd('backward', { ctrl: event.ctrlKey, shift: event.shiftKey });
             }
         });
 
@@ -53,7 +54,7 @@
                 activeKeys.delete(key);
                 // Only send stop if no direction keys remain active
                 if (!activeKeys.has('w') && !activeKeys.has('s')) {
-                    sendCmd('stop');
+                    sendCmd('stop', { ctrl: event.ctrlKey, shift: event.shiftKey });
                 }
             }
         });
