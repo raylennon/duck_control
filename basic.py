@@ -23,12 +23,12 @@ def index():
 def control():
     data = request.json
     action = data.get('action')
-    # Modifiers: expect booleans 'ctrl' and 'shift' in the JSON
-    ctrl = bool(data.get('ctrl', False))
+    # Modifiers: expect booleans 'alt' and 'shift' in the JSON
+    alt = bool(data.get('alt', False))
     shift = bool(data.get('shift', False))
 
     # Determine speed: ctrl -> full, shift -> slow, otherwise default half
-    if ctrl:
+    if alt:
         speed = 1.0
     elif shift:
         speed = 0.1

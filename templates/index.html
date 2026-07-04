@@ -35,10 +35,10 @@
             const key = event.key.toLowerCase();
             if (key === 'w') {
                 activeKeys.add('w');
-                sendCmd('forward', { ctrl: event.ctrlKey, shift: event.shiftKey });
+                sendCmd('forward', { alt: event.altKey, shift: event.shiftKey });
             } else if (key === 's') {
                 activeKeys.add('s');
-                sendCmd('backward', { ctrl: event.ctrlKey, shift: event.shiftKey });
+                sendCmd('backward', { alt: event.altKey, shift: event.shiftKey });
             }
         });
 
@@ -54,7 +54,7 @@
                 activeKeys.delete(key);
                 // Only send stop if no direction keys remain active
                 if (!activeKeys.has('w') && !activeKeys.has('s')) {
-                    sendCmd('stop', { ctrl: event.ctrlKey, shift: event.shiftKey });
+                    sendCmd('stop', { alt: event.altKey, shift: event.shiftKey });
                 }
             }
         });
