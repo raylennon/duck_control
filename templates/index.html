@@ -23,21 +23,8 @@
 
     <script>
         const activeKeys = new Set();
-
-        function getModifiers() {
-            return {
-                fast: activeKeys.has('q'),
-                shift: activeKeys.has('shift')
-            };
-        }
-
-        function currentMovement() {
-            if (activeKeys.has('w')) return 'forward';
-            if (activeKeys.has('s')) return 'backward';
-            if (activeKeys.has('a')) return 'left';
-            if (activeKeys.has('d')) return 'right';
-            return null;
-        }
+        let qDown = false;
+        let lastDirection = null;
 
         function sendCmd(action, mods = {}) {
             const body = Object.assign({ action: action }, mods);
@@ -48,30 +35,41 @@
             }).catch(err => console.error('Error:', err));
         }
 
+        function getActiveDirection() {
+            if (activeKeys.has('w')) return 'forward';
+            if (activeKeys.has('s')) return 'backward';
+            if (activeKeys.has('a')) return 'left';
+            if (activeKeys.has('d')) return 'right';
+            return null;
+        }
+
         window.addEventListener('keydown', (event) => {
             if (event.repeat) return; // Prevents OS key-repeat events from trigger-spamming fetch
 
             const key = event.key.toLowerCase();
             if (key === 'q') {
-                activeKeys.add('q');
-                const move = currentMovement();
-                if (move) sendCmd(move, getModifiers());
-            } else if (key === 'shift') {
-                activeKeys.add('shift');
-                const move = currentMovement();
-                if (move) sendCmd(move, getModifiers());
+                if (!qDown) {
+                    qDown = true;
+                    if (lastDirection) {
+                        sendCmd(lastDirection, { alt: true, shift: event.shiftKey });
+                    }
+                }
             } else if (key === 'w') {
                 activeKeys.add('w');
-                sendCmd('forward', getModifiers());
+                lastDirection = 'forward';
+                sendCmd('forward', { alt: qDown, shift: event.shiftKey });
             } else if (key === 's') {
                 activeKeys.add('s');
-                sendCmd('backward', getModifiers());
+                lastDirection = 'backward';
+                sendCmd('backward', { alt: qDown, shift: event.shiftKey });
             } else if (key === 'a') {
                 activeKeys.add('a');
-                sendCmd('left', getModifiers());
+                lastDirection = 'left';
+                sendCmd('left', { alt: qDown, shift: event.shiftKey });
             } else if (key === 'd') {
                 activeKeys.add('d');
-                sendCmd('right', getModifiers());
+                lastDirection = 'right';
+                sendCmd('right', { alt: qDown, shift: event.shiftKey });
             }
         });
 
@@ -83,19 +81,21 @@
 
         window.addEventListener('keyup', (event) => {
             const key = event.key.toLowerCase();
-            if (key === 'w' || key === 's' || key === 'a' || key === 'd') {
-                activeKeys.delete(key);
-                // Only send stop if no direction keys remain active
-                if (!activeKeys.has('w') && !activeKeys.has('s') && !activeKeys.has('a') && !activeKeys.has('d')) {
-                    sendCmd('stop', getModifiers());
-                } else {
-                    const move = currentMovement();
-                    if (move) sendCmd(move, getModifiers());
+            if (key === 'q') {
+                if (qDown) {
+                    qDown = false;
+                    if (lastDirection) {
+                        sendCmd(lastDirection, { alt: false, shift: event.shiftKey });
+                    }
                 }
-            } else if (key === 'q' || key === 'shift') {
+            } else if (key === 'w' || key === 's' || key === 'a' || key === 'd') {
                 activeKeys.delete(key);
-                const move = currentMovement();
-                if (move) sendCmd(move, getModifiers());
+                if (activeKeys.size === 0) {
+                    lastDirection = null;
+                    sendCmd('stop');
+                } else {
+                    lastDirection = getActiveDirection();
+                }
             }
         });
     </script>
