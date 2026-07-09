@@ -24,6 +24,21 @@
     <script>
         const activeKeys = new Set();
 
+        function getModifiers() {
+            return {
+                fast: activeKeys.has('q'),
+                shift: activeKeys.has('shift')
+            };
+        }
+
+        function currentMovement() {
+            if (activeKeys.has('w')) return 'forward';
+            if (activeKeys.has('s')) return 'backward';
+            if (activeKeys.has('a')) return 'left';
+            if (activeKeys.has('d')) return 'right';
+            return null;
+        }
+
         function sendCmd(action, mods = {}) {
             const body = Object.assign({ action: action }, mods);
             fetch('/control', {
@@ -37,18 +52,26 @@
             if (event.repeat) return; // Prevents OS key-repeat events from trigger-spamming fetch
 
             const key = event.key.toLowerCase();
-            if (key === 'w') {
+            if (key === 'q') {
+                activeKeys.add('q');
+                const move = currentMovement();
+                if (move) sendCmd(move, getModifiers());
+            } else if (key === 'shift') {
+                activeKeys.add('shift');
+                const move = currentMovement();
+                if (move) sendCmd(move, getModifiers());
+            } else if (key === 'w') {
                 activeKeys.add('w');
-                sendCmd('forward', { alt: event.altKey, shift: event.shiftKey });
+                sendCmd('forward', getModifiers());
             } else if (key === 's') {
                 activeKeys.add('s');
-                sendCmd('backward', { alt: event.altKey, shift: event.shiftKey });
+                sendCmd('backward', getModifiers());
             } else if (key === 'a') {
                 activeKeys.add('a');
-                sendCmd('left', { alt: event.altKey, shift: event.shiftKey });
+                sendCmd('left', getModifiers());
             } else if (key === 'd') {
                 activeKeys.add('d');
-                sendCmd('right', { alt: event.altKey, shift: event.shiftKey });
+                sendCmd('right', getModifiers());
             }
         });
 
@@ -64,8 +87,15 @@
                 activeKeys.delete(key);
                 // Only send stop if no direction keys remain active
                 if (!activeKeys.has('w') && !activeKeys.has('s') && !activeKeys.has('a') && !activeKeys.has('d')) {
-                    sendCmd('stop', { alt: event.altKey, shift: event.shiftKey });
+                    sendCmd('stop', getModifiers());
+                } else {
+                    const move = currentMovement();
+                    if (move) sendCmd(move, getModifiers());
                 }
+            } else if (key === 'q' || key === 'shift') {
+                activeKeys.delete(key);
+                const move = currentMovement();
+                if (move) sendCmd(move, getModifiers());
             }
         });
     </script>
