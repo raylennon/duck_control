@@ -11,9 +11,13 @@
 </head>
 <body>
     <h1>Duck Motor Control</h1>
+    <p>Use WASD keys and the buttons to control the tank drive. Alt = full speed, Shift = slow speed.</p>
     <h2>Motor 1</h2>
     <button class="btn" onmousedown="sendCmd('forward')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('forward'); event.preventDefault();" ontouchend="sendCmd('stop');">Forward</button>
     <button class="btn" onmousedown="sendCmd('backward')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('backward'); event.preventDefault();" ontouchend="sendCmd('stop');">Backward</button>
+    <h2>Motor 2</h2>
+    <button class="btn" onmousedown="sendCmd('left')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('left'); event.preventDefault();" ontouchend="sendCmd('stop');">Left</button>
+    <button class="btn" onmousedown="sendCmd('right')" onmouseup="sendCmd('stop')" ontouchstart="sendCmd('right'); event.preventDefault();" ontouchend="sendCmd('stop');">Right</button>
     <br><br>
     <button class="btn stop" onclick="sendCmd('stop')">EMERGENCY STOP</button>
 
@@ -39,6 +43,12 @@
             } else if (key === 's') {
                 activeKeys.add('s');
                 sendCmd('backward', { alt: event.altKey, shift: event.shiftKey });
+            } else if (key === 'a') {
+                activeKeys.add('a');
+                sendCmd('left', { alt: event.altKey, shift: event.shiftKey });
+            } else if (key === 'd') {
+                activeKeys.add('d');
+                sendCmd('right', { alt: event.altKey, shift: event.shiftKey });
             }
         });
 
@@ -50,10 +60,10 @@
 
         window.addEventListener('keyup', (event) => {
             const key = event.key.toLowerCase();
-            if (key === 'w' || key === 's') {
+            if (key === 'w' || key === 's' || key === 'a' || key === 'd') {
                 activeKeys.delete(key);
                 // Only send stop if no direction keys remain active
-                if (!activeKeys.has('w') && !activeKeys.has('s')) {
+                if (!activeKeys.has('w') && !activeKeys.has('s') && !activeKeys.has('a') && !activeKeys.has('d')) {
                     sendCmd('stop', { alt: event.altKey, shift: event.shiftKey });
                 }
             }

@@ -7,14 +7,20 @@ app = Flask(__name__)
 # Initialize Enable Pins (set to High immediately)
 en_forward = DigitalOutputDevice(17, initial_value=True)
 en_reverse = DigitalOutputDevice(27, initial_value=True)
+en_right = DigitalOutputDevice(22, initial_value=True)
+en_left = DigitalOutputDevice(23, initial_value=True)
 
 # Initialize PWM Pins (Frequency default is 100Hz)
 pwm_forward = PWMOutputDevice(12)
 pwm_reverse = PWMOutputDevice(13)
+pwm_right = PWMOutputDevice(18)
+pwm_left = PWMOutputDevice(19)
 
 def stop_motor():
     pwm_forward.value = 0.0
     pwm_reverse.value = 0.0
+    pwm_right.value = 0.0
+    pwm_left.value = 0.0
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -49,7 +55,7 @@ def control():
     alt = bool(data.get('alt', False))
     shift = bool(data.get('shift', False))
 
-    # Determine speed: ctrl -> full, shift -> slow, otherwise default half
+    # Determine speed: alt -> full, shift -> slow, otherwise default half
     if alt:
         speed = 1.0
     elif shift:
@@ -59,10 +65,24 @@ def control():
     
     if action == 'forward':
         pwm_reverse.value = 0.0
+        pwm_left.value = 0.0
         pwm_forward.value = speed
+        pwm_right.value = speed
     elif action == 'backward':
         pwm_forward.value = 0.0
+        pwm_right.value = 0.0
         pwm_reverse.value = speed
+        pwm_left.value = speed
+    elif action == 'left':
+        pwm_forward.value = 0.0
+        pwm_left.value = 0.0
+        pwm_reverse.value = speed
+        pwm_right.value = speed
+    elif action == 'right':
+        pwm_reverse.value = 0.0
+        pwm_right.value = 0.0
+        pwm_forward.value = speed
+        pwm_left.value = speed
     elif action == 'stop':
         stop_motor()
         
