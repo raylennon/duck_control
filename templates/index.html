@@ -94,7 +94,14 @@
                     lastDirection = null;
                     sendCmd('stop');
                 } else {
-                    lastDirection = getActiveDirection();
+                    const newDir = getActiveDirection();
+                    // If we reverted to a previously-held key, send its command
+                    if (newDir && newDir !== lastDirection) {
+                        lastDirection = newDir;
+                        sendCmd(newDir, { alt: qDown, shift: event.shiftKey });
+                    } else {
+                        lastDirection = newDir;
+                    }
                 }
             }
         });
